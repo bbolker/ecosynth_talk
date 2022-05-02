@@ -1,0 +1,14 @@
+
+*.bbl
+*.blg
+\#*
+*.log
+*.snm
+*.nav
+*.out
+*.toc
+.Rhistory
+*~
+.#*
+*.tex
+

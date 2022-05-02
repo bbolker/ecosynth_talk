@@ -1,0 +1,77 @@
+Year,Disease,Type,Value
+1999,West Nile Fever,Cases,3
+2000,West Nile Fever,Cases,2
+2001,West Nile Fever,Cases,2
+2002,West Nile Fever,Cases,1210
+2003,West Nile Fever,Cases,6996
+2004,West Nile Fever,Cases,1391
+2005,West Nile Fever,Cases,1691
+2006,West Nile Fever,Cases,2774
+2007,West Nile Fever,Cases,2403
+2008,West Nile Fever,Cases,667
+2009,West Nile Fever,Cases,334
+2010,West Nile Fever,Cases,392
+2011,West Nile Fever,Cases,226
+2012,West Nile Fever,Cases,2801
+2013,West Nile Fever,Cases,1202
+2014,West Nile Fever,Cases,858
+2015,West Nile Fever,Cases,720
+2016,West Nile Fever,Cases,840
+2017,West Nile Fever,Cases,672
+1999,Neuroinvasive,Cases,59
+2000,Neuroinvasive,Cases,19
+2001,Neuroinvasive,Cases,64
+2002,Neuroinvasive,Cases,2964
+2003,Neuroinvasive,Cases,2866
+2004,Neuroinvasive,Cases,1148
+2005,Neuroinvasive,Cases,1309
+2006,Neuroinvasive,Cases,1495
+2007,Neuroinvasive,Cases,1227
+2008,Neuroinvasive,Cases,689
+2009,Neuroinvasive,Cases,386
+2010,Neuroinvasive,Cases,629
+2011,Neuroinvasive,Cases,486
+2012,Neuroinvasive,Cases,2873
+2013,Neuroinvasive,Cases,1267
+2014,Neuroinvasive,Cases,1347
+2015,Neuroinvasive,Cases,1455
+2016,Neuroinvasive,Cases,1309
+2017,Neuroinvasive,Cases,1425
+1999,West Nile Fever,Deaths,0
+2000,West Nile Fever,Deaths,0
+2001,West Nile Fever,Deaths,0
+2002,West Nile Fever,Deaths,8
+2003,West Nile Fever,Deaths,32
+2004,West Nile Fever,Deaths,6
+2005,West Nile Fever,Deaths,15
+2006,West Nile Fever,Deaths,15
+2007,West Nile Fever,Deaths,7
+2008,West Nile Fever,Deaths,3
+2009,West Nile Fever,Deaths,0
+2010,West Nile Fever,Deaths,3
+2011,West Nile Fever,Deaths,1
+2012,West Nile Fever,Deaths,16
+2013,West Nile Fever,Deaths,8
+2014,West Nile Fever,Deaths,10
+2015,West Nile Fever,Deaths,4
+2016,West Nile Fever,Deaths,1
+2017,West Nile Fever,Deaths,0
+1999,Neuroinvasive,Deaths,7
+2000,Neuroinvasive,Deaths,2
+2001,Neuroinvasive,Deaths,10
+2002,Neuroinvasive,Deaths,276
+2003,Neuroinvasive,Deaths,232
+2004,Neuroinvasive,Deaths,94
+2005,Neuroinvasive,Deaths,104
+2006,Neuroinvasive,Deaths,162
+2007,Neuroinvasive,Deaths,117
+2008,Neuroinvasive,Deaths,41
+2009,Neuroinvasive,Deaths,32
+2010,Neuroinvasive,Deaths,54
+2011,Neuroinvasive,Deaths,42
+2012,Neuroinvasive,Deaths,270
+2013,Neuroinvasive,Deaths,111
+2014,Neuroinvasive,Deaths,87
+2015,Neuroinvasive,Deaths,142
+2016,Neuroinvasive,Deaths,105
+2017,Neuroinvasive,Deaths,146

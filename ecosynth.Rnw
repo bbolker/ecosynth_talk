@@ -1,0 +1,746 @@
+\documentclass[english]{beamer}
+\definecolor{links}{HTML}{2A1B81}
+\hypersetup{colorlinks,linkcolor=,citecolor=,urlcolor=links}
+\usepackage{natbib}
+\usepackage[T1]{fontenc}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath}
+\usepackage{multicol}
+\usepackage{xcolor} %% color conflicts with TikZ????
+\usepackage{hyperref}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{graphicx}
+\usepackage{animate}
+\usepackage{arydshln}
+\usepackage{tikz}
+\newcommand{\colemph}[1]{{\color{red} \emph{#1}}}
+%\bibliographystyle{shortreflist}
+\bibliographystyle{notitle}
+% https://tex.stackexchange.com/questions/308/different-command-definitions-with-and-without-optional-argument
+%\usepackage{etoolbox}
+%\newcommand\usefig[2][]{%
+%  \ifstrempty{#1}{%
+    % something with #2
+%  }{%
+    % some other thing with #1 and #2
+%  }%
+% }
+%https://tex.stackexchange.com/questions/58628/optional-argument-for-newcommand
+% \usepackage{xifthen}
+%\newcommand{\usefig}[2]{
+%  \def\adj\ifthenelse{\equal{#2}{}}{#2}{0.8}
+%  \includegraphics[width=\adj\textwidth,height=\adj\textheight,keepaspectratio]{figs/#1}}
+\newcommand{\fullfig}[1]{
+ \includegraphics[width=1.0\textwidth,height=1.0\textheight,keepaspectratio]{figs/#1}
+}
+\newcommand{\medfig}[1]{
+ \includegraphics[width=0.8\textwidth,height=0.8\textheight,keepaspectratio]{figs/#1}
+}
+\newcommand{\adjfig}[2]{
+ \includegraphics[width=#2\textwidth,height=#2\textheight,keepaspectratio]{figs/#1}
+}
+
+\usetheme{Frankfurt}
+\usecolortheme{dove}
+\setbeamercovered{transparent}
+\setbeamercolor{description item}{fg=blue}
+\newcommand{\citepx}[1]{{\small \citep{#1}}}
+\newcommand{\citex}[1]{{\small \cite{#1}}}
+% \renewcommand{\descriptionlabel}[1]{\hspace{\labelsep}\textbf{#1}}
+\usepackage{babel}
+
+% "Beamer infolines outer theme with miniframe bullets only for the current section"
+% (http://tex.stackexchange.com/a/45152/3323)
+%\useoutertheme[subsection=false]{miniframes}
+\useoutertheme[subsection=false]{miniframes}
+%% \setbeamertemplate{mini frame in other subsection}{}
+%% \usepackage{etoolbox}
+\makeatletter
+\beamer@compressfalse
+%% \patchcmd{\insertnavigation}{\hskip-1.875ex plus-1fill}{}{}{}
+%% \patchcmd{\sectionentry}{\beamer@section@set@min@width}{}{}{}
+%% \patchcmd{\sectionentry}{\hskip1.875ex plus 1fill}{}{}{}
+%% \patchcmd{\sectionentry}{\hyperlink{Navigation#3}{{\usebeamertemplate{section in head/foot shaded}}}}{}{}{}
+%% \patchcmd{\slideentry}{\beamer@ypos=#2\relax}{}{}{}
+%% \patchcmd{\fakeslideentry}{\beamer@ypos=#2\relax}{}{}{}
+\makeatother
+
+\newcommand{\rzero}{{\mathcal R}_0}
+\newcommand{\rzeroi}[1]{{\mathcal R}_{0,#1}}
+\newcommand{\rzeroij}{{\mathcal R}_{0\{ijCv\}}}
+\newcommand{\bird}{\ensuremath{\mathcal B}}
+\newcommand{\birdi}{\ensuremath{\mathcal{B}_{i}}}
+\newcommand{\birdj}{\ensuremath{\mathcal{B}_{j}}}
+\newcommand{\mosquito}{\ensuremath{\mathcal M}}
+\newcommand{\logtiter}{$\log_{10}$ titer\xspace}
+\newcommand{\logdose}{$\log_{10}$ dose\xspace}
+\newcommand{\searchtopic}[1]{{\texttt{#1}}}
+\newcommand{\biday}{t_b}
+\newcommand{\tbiday}{{T_b}}
+\newcommand{\miday}{t_m}
+\newcommand{\tmiday}{{T_m}}
+\newcommand{\surv}{\textrm{surv}}
+\newcommand{\bites}{\textrm{bites}/\textrm{day}}
+\newcommand{\code}[1]{{\tt #1}}
+\begin{document}
+
+
+
+\makeatletter
+\def\newblock{\beamer@newblock}
+\makeatother 
+
+<<setup,echo=FALSE,message=FALSE>>=
+library(knitr)
+library(tikzDevice)
+options(tikzMetricPackages = c("\\usepackage[utf8{inputenc}",
+    "\\usepackage[T1]{fontenc}", "\\usetikzlibrary{calc}", "\\usepackage{amssymb}"))
+opts_chunk$set(echo=FALSE,error=TRUE,
+               fig.align="center",out.width="0.8\\textwidth",
+               fig.width=7,fig.height=5
+              ,dev="pdf"  ## draft
+               )
+library(deSolve)
+library(reshape)
+library(lattice)
+library(latticeExtra)
+library(emdbook)
+library(nlme)
+library(bbmle)
+library(ggplot2); theme_set(theme_bw(base_size=16))
+library(viridisLite)
+library(scales) ## for squish()
+library(gridExtra) ## for grid.arrange()
+library(mgcv)
+library(plyr)   ## for mutate()
+library(psyphy) ## for restricted-link models
+library(reshape2)
+library(splines)  ## for vir asymptote profile
+library(deSolve)
+library(Hmisc)
+library(gsubfn)
+library(dplyr)
+library(readr)
+load("data/WNV_Pub.Rdata")
+@ 
+
+\title[Ecosynthesis with WNV]{Ecological synthesis across scales: West Nile virus in individuals and communities}
+\author[Ben Bolker and Morgan Kain]{Ben~Bolker}
+\institute{McMaster University \\
+  Departments of Mathematics \& Statistics and Biology}
+\date{23 July 2020}
+% \pgfdeclareimage[height=0.5cm]{uflogo}{letterhdwm}
+% \logo{\pgfuseimage{uflogo}}
+\AtBeginSubsection[]{
+  \frame<beamer>{ 
+     \frametitle{Outline}   
+     \tableofcontents[currentsection,currentsubsection] 
+   }
+ }
+
+\begin{frame}
+\titlepage
+\end{frame}
+% \beamerdefaultoverlayspecification{<+->}
+
+\begin{frame}
+\frametitle{Outline}
+\tableofcontents{}
+\end{frame}
+
+\begin{frame}
+\frametitle{Acknowledgements}
+\begin{description}
+\item[People] Morgan Kain \includegraphics[width=1in]{figs/kain.jpg}
+\item[Support] NSF Discovery Grant
+\end{description}
+
+\end{frame}
+
+\section[WNV biology]{Natural and evolutionary history of WNV}
+\subsection{}
+
+\begin{frame}
+  
+\frametitle{West Nile Virus}
+
+\begin{itemize}
+\item single stranded RNA virus
+\item Flavivirus (dengue, yellow fever, Zika)
+\item primary spread by \emph{Culex} mosquitos
+\item birds are primary hosts \\ (hundreds of species!)
+\end{itemize}
+
+\begin{center}
+  \includegraphics[width=2in]{figs/Figure1.pdf}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+  \fullfig{Ciota_Kramer_2013.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{WNV in North America}
+  \begin{itemize}
+  \item first detected in 1999 (NY99 strain)
+  \item related to 1997-1998 Israel strains \\
+    (single substitution in NS3 helicase)
+  \item spread rapidly 1999-2003
+  \item new WN02 strain \textbf{rapidly} displaced NY99 \\
+    (single substitution in envelope gene)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{WNV phylogeny \citep{lanciotti_complete_2002}}
+
+  \medfig{WNVphylo.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{ecological impact: American crows \citep{ladeau_west_2007}}
+<<ladeau_crow,fig.width=4,fig.height=3>>=
+x <- read.csv("data/ladeau_crow.txt")  
+ggplot(x,aes(year,est,ymin=lwr,ymax=upr,colour=(year>=2000))) +
+    geom_pointrange()+
+    geom_vline(xintercept=1999.5, linetype=2)+
+    scale_colour_manual(values=c("black","red"),
+                        guide=FALSE)+
+  labs(y="counts/BBS transect")
+@
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{spillover to mammals}
+  \begin{itemize}
+  \item humans, horses, cats, dogs, squirrels \ldots
+  \item dead-end hosts
+  \item symptoms in $\approx 20\%$ of human infections
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Human incidence}  
+<<human_cases,fig.width=6,fig.height=3,warning=FALSE,out.width="\\textwidth">>=
+## info available 1999-2018 at: https://www.cdc.gov/westnile/statsmaps/cumMapsData.html
+## not all assembled https://www.cdc.gov/westnile/statsmaps/preliminarymapsdata2019/index.html
+x <- read.csv("data/WNV_human_cases.csv")
+x$Disease <- factor(x$Disease, levels=c("Neuroinvasive", "West Nile Fever"),
+                    labels=c("neuroinvasive","fever"))
+
+ggplot(x,aes(Year,Value,linetype=Disease,colour=Type,shape=Disease)) +
+  geom_point(fill="white") +
+  geom_line() + scale_y_log10() +
+  scale_linetype_discrete(name="") + 
+  ## scale_colour_brewer(palette="Set1",name="")+
+  scale_colour_manual(values=c("black","red"), name="")+
+  scale_shape_manual(values=c(16,21),name="")+
+  ylab("annual incidence (US)")
+@
+{\small US CDC}
+
+\end{frame}
+
+
+\section[Strain replacement]{Understanding WNV strain replacement}
+\subsection{introduction}
+
+
+\begin{frame}
+  \fullfig{WNV_displace.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{what drove WNV strain replacement?}
+  estimated fitness ($\rzero$) difference $>3 \times$
+
+  Consensus:
+  
+  \begin{itemize}
+  \item WNV02 $>$ NY99 due to increased mosquito incubation rate \\
+    \citep{kilpatrick_temperature_2008}
+  \item robins are the key contributor to WNV spread  \\
+    \citep{kilpatrick_host_2006}
+  \item bird species richness predicts human cases (dilution effect)
+  \end{itemize}
+  
+\end{frame}
+
+\subsection{methods}
+\begin{frame}
+  \fullfig{Figure1b.pdf}
+\end{frame}
+
+\begin{frame}
+  \frametitle{transmission from bird species $i$ to $j$}
+
+  (for virus genotype $v$ at temperature $C$)
+  
+\begin{equation*}
+\begin{split}
+  \rzeroij  =  & \sum_{\biday=1}^\tbiday \Biggl( \bird\ \surv_{\biday v} \times \bird \to \mosquito~\textrm{Trans}_{\biday v}
+  \times \mosquito~\bites  \\
+   \times & \sum_{\miday=1}^\tmiday \biggl(\mosquito \to \bird~\textrm{Trans}_{\miday \biday vC} \times
+ \mosquito~\surv_{C\miday}  \times \mosquito~\bites \biggr) \Biggr) \\ 
+ & \qquad {} \times  \mosquito :\bird~\textrm{Ratio} 
+   \times \textrm{Prop}~\birdi \times \mosquito~\textrm{Bite Pref on}~\birdi \\
+ & \qquad \qquad {} \times \textrm{Prop}~\birdj \times \mosquito~\textrm{Bite Pref on}~\birdj 
+\end{split}
+\label{eq:rzero}
+\end{equation*}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{statistical methods}
+  \begin{itemize}
+  \item literature survey/scraping
+  \item for each component, fit hierarchical models
+    \begin{itemize}
+    \item appropriate function (logistic, Gaussian, etc.)
+    \item fixed effects of genotype, day, titer, temperature
+    \item random effects of citation, experiment, bird species
+    \item all done in Stan \citep{carpenter_stan_2017}
+    \end{itemize}
+  \end{itemize}
+  \includegraphics[width=1in]{figs/stan_logo.png}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{bird survival vs. time}
+<<birdsurv, fig.width=6,fig.height=5>>=
+sp_cols <- c("grey12", "tan4", "violetred4", "firebrick2")
+sp_names <- c("American Crow", "House Sparrow", "House Finch", "American Robin")
+g_surv <- ggplot(surv_Predictions, aes(Day, Median, linetype = Virus_Lineage,
+                             fill = Host_Family_Simplified)) + 
+  geom_line(lwd = 1.2) + 
+  geom_line(aes(y = Lower), lwd = .5) +
+  geom_line(aes(y = Upper), lwd = .5) +
+  geom_ribbon(aes(ymin = Lower, ymax = Upper), alpha = 0.075) +
+  scale_fill_manual(labels = sp_names,
+                    values = sp_cols,
+                    name = "Host_Family") +
+  labs(x="Day",y="Survival") +
+  scale_shape_manual(values = c(16, 2),
+                     guide=guide_legend(override.aes=list(size=8)),
+                     name="strain") +
+  scale_linetype_manual(values = c(1, 2), name="") +
+  scale_size_continuous(name="sample size",breaks=c(1,5,10)) +
+  scale_y_continuous(limits = c(0, 1), breaks = c(0, .5, 1)) +
+  guides(fill = FALSE) +
+  theme(panel.spacing=grid::unit(0,"lines"))+
+  facet_wrap(~ Host_Family_Simplified, ncol = 2)
+print(g_surv + stat_sum(data = subset(survival_for_plot,
+                                       Host_Family_Simplified != "Other"), 
+                         aes(Day, Survival, shape = Virus_Lineage),
+                         alpha = 0.7))
+@
+\end{frame}
+
+\begin{frame}
+    \frametitle{bird titer curves vs. time}
+<<birdtiter, fig.width=6,fig.height=5>>=
+ggplot(Titer_Predictions, aes(Day, Median,
+                 linetype = Virus_Lineage, fill = Host_Family_Simplified)) + 
+  geom_line(lwd = 1.2) + 
+  geom_line(aes(y = Lower), lwd = .5) +
+  geom_line(aes(y = Upper), lwd = .5) +
+  geom_ribbon(aes(ymin = Lower, ymax = Upper), alpha = 0.075) +
+  geom_jitter(data = subset(titercurves_for_plot,Host_Family_Simplified != "Other"), aes(Day, Titer, shape = Virus_Lineage), alpha = 0.7, width = 0.4) +
+  scale_fill_manual(labels = sp_names,
+                    values = sp_cols,
+                    name = "Host_Family") +
+  labs(x="Day",y=expression(Titer~(log[10]~PFU))) +
+
+  scale_shape_manual(values = c(16, 2)) + 
+  scale_linetype_manual(values = c(1, 2)) + 
+  guides(fill = FALSE) + 
+  facet_wrap(~ Host_Family_Simplified, ncol = 2) +
+  theme(panel.spacing=grid::unit(0,"lines"))+
+  scale_y_continuous(limits = c(0, 15), breaks = c(0, 5, 10, 15))
+@ 
+\end{frame}
+
+\begin{frame}
+  \frametitle{transmission vs. titer}
+  % from WNV_Pub
+  \medfig{birdmos-1.pdf}
+\end{frame}
+
+\begin{frame}
+  \frametitle{mosquito-to-bird transmission}
+  % from WNV_Pub
+  \fullfig{mosbird-1.pdf}
+\end{frame}
+
+\subsection{conclusions}
+\begin{frame}
+  \frametitle{$\rzero$ conclusions}
+<<rzero, fig.width=6,fig.height=5, message=FALSE>>=
+library(ggstance)
+ggplot(R0_final_ggplot,
+       aes(R0, forcats::fct_rev(VL_T),
+           colour = Virus_Lineage,
+           fill = Temperature,
+           group = interaction(Host, Virus_Lineage, Temperature))) +
+    geom_violinh() + 
+    scale_shape_manual(values = c(16, 2)) + 
+    scale_linetype_manual(values = c(1, 2)) +
+##     guides(linetype = FALSE, fill = FALSE, size = FALSE, colour = FALSE) +
+    scale_fill_manual(labels = c("16", "26"),
+                      values = gray(c(0.1,0.6)),
+                      name = "Temperature") +
+    geom_vline(xintercept=1,lty=2) + 
+    scale_colour_manual(values=c("blue","red"),
+                    name = "strain") +
+  facet_wrap(~ Host, ncol = 2) +
+    scale_x_log10(breaks=c(0.1,1,10),
+                  labels=c("0.1","1","10")) +
+    ## scale_y_discrete(breaks=levels(R0_final_ggplot$VL_T)) +
+    xlab(expression(R[0])) +
+    ylab("") +
+    theme(panel.spacing=grid::unit(0,"lines"))
+@    
+
+%    \includegraphics[width=0.8\textwidth,height=1.0\textheight,angle=90,keepaspectratio]{figs/rzerodist-1.pdf}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{fitness advantage of WN02}
+<<rzero2, fig.width=6,fig.height=5, message=FALSE>>=
+library(tidyr)
+library(dplyr)
+WN02_adv <- (R0_final_ggplot
+    %>% group_by(Host,Virus_Lineage,Temperature)
+    %>% mutate(s=seq(n()))
+    %>% select(-VL_T)
+    %>% ungroup()
+    %>% tidyr::spread(Virus_Lineage,R0)
+    %>% mutate(WN02_adv=WN02/NY99)
+)
+ggplot(WN02_adv,aes(fill=factor(Temperature), ## forcats::fct_rev(factor(Temperature)),
+                    y=Host,  ## for labels (1 host per panel)
+                    x=WN02_adv)) +
+  geom_violinh(position=position_dodgev(height=-1))+  ## force ordering
+  scale_x_log10(breaks=c(0.01,1,3,100),
+                labels=c("0.01","1","3","100")) +
+    scale_fill_manual(labels = c("16", "26"),
+                      values = c("#00000088","#0000001A"), ## black + different alpha
+                      name = "Temperature")+
+    geom_vline(xintercept=1,lty=2) +
+    geom_vline(xintercept=3,lty=3) +
+    facet_grid(Host~.,scale="free")+
+    theme(panel.spacing=grid::unit(0,"lines"),
+          strip.background=element_blank(),
+          strip.text.y=element_blank())+
+    labs(y="",x=expression(R[0]~"advantage of WN02"))
+@
+\end{frame}
+
+\begin{frame}
+  \frametitle{incubation advantage of WN02?}
+<<mosbird, fig.width=6,fig.height=4,message=FALSE,warning=FALSE>>=
+fn <- "data/bird_to_mos.csv"
+dd <- (read_csv(fn)
+    %>% filter(Strain != "JEV", Temperature_C>=18, Temperature_C != 28)
+    %>% droplevels()
+    %>% mutate(K2008=(Citation=="Kilpatrick et al 2008"))
+)
+dds <- (dd
+  %>% group_by(Temperature_C,Strain,Days_Post_Infection)
+  %>% summarise(mean=mean(Percent_Transmitting_Mean,na.rm=TRUE))
+  %>% tidyr::drop_na(mean)
+)
+ggplot(dds,aes(Days_Post_Infection,
+              mean,
+              colour=factor(Temperature_C),
+              linetype=Strain,
+              shape=Strain)) +
+    geom_point()+
+    scale_colour_manual(values=viridis(7),name="temp (C)")+
+    geom_smooth(method="glm",  ## "gam"?
+                ## formula=y~s(x,k=5),
+                formula=y~poly(x,2),
+                method.args=list(family=quasibinomial()),
+                alpha=0.1)+
+    ## geom_line(aes(size=(Temperature_C==32)))+
+    scale_size_manual(values=c(1,2))+
+    labs(y="mean transmission probability",
+         x="days post-infection")
+@
+\end{frame}
+
+
+\begin{frame}
+  \fullfig{american_robin_1.png}
+\end{frame}
+\begin{frame}
+  \fullfig{american_robin_2.png}
+\end{frame}
+\begin{frame}
+  \fullfig{american_robin_3.png}
+\end{frame}
+\begin{frame}
+  \fullfig{american_robin_4.png}
+\end{frame}
+\begin{frame}
+  \fullfig{american_robin_5.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{conclusions}
+  \begin{itemize}
+  \item advantage of WN02 over NY99: still uncertain
+  \item missing hosts? ecological context?
+  \item could use more data on mosquito-to-bird transmission
+  \end{itemize}
+\end{frame}
+
+\section[Community spread]{Community spread of WNV}
+\subsection{intro}
+
+\begin{frame}
+  \frametitle{From species to community}
+  that was fun, but \ldots
+  \begin{itemize}
+  \item monoculture estimates of $\rzero$
+  \item all but four species ignored/lumped into ``other''
+  \item can only predict for a few specific communities
+  \end{itemize}
+
+  Extend to a wider spatial, temporal, phylogenetic range ??
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{New components needed}
+
+  \begin{itemize}
+  \item community composition in space \& time
+    \begin{itemize}
+    \item recorded counts
+    \item detectability 
+    \end{itemize}
+  \item biting preferences
+  \item titer profiles/survival/etc. (all species)
+  \end{itemize}
+\end{frame}
+
+\subsection{methods}
+\begin{frame}
+  \frametitle{21st century citizen science}
+  \fullfig{ebird}
+\end{frame}
+
+\begin{frame}
+  \frametitle{eBird data}
+
+  \begin{itemize}
+  \item complete checklists Jan 2000 - Dec 2017 (1.44 million)
+  \item aggregated to county
+  \item 33,479 ``communities'' (county $\times$ month); 700 species
+  \item IUCN, Catalogue of Life for species name lookup
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{detectability}
+  \begin{itemize}
+  \item 1440 titles/abstracts $\to$ 12 papers $\to$ 469 species \\
+    (419 from \cite{Blancheretal.2013})
+  \item adjusted for body mass
+  \end{itemize}
+
+  \includegraphics[width=1in]{figs/crc_avianmass.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{phylogenetic imputation}
+
+  \begin{itemize}
+  \item information on species missing from our data set
+  \item estimate missing values based on closest relatives \\
+    (and other covariates, e.g. body size)
+  \item \emph{ancestral state reconstruction}
+  \item machinery that lets this work (quickly) in \code{lme4} package
+  \item use for most effects in the model
+  \end{itemize}
+    
+\end{frame}
+
+\begin{frame}
+  \fullfig{phylog_impute_1.png}
+\end{frame}
+\begin{frame}
+  \fullfig{phylog_impute_2.png}
+\end{frame}
+\begin{frame}
+  \fullfig{phylog_impute_3.png}
+\end{frame}
+\begin{frame}
+  \fullfig{phylog_impute_4.png}
+\end{frame}
+\begin{frame}
+  \fullfig{phylog_impute_5.png}
+\end{frame}
+\begin{frame}
+  \fullfig{phylog_impute_6.png}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{biting preferences}
+  \begin{itemize}
+  \item mosquito biting survey by \cite{Hameretal.2009} (blood meal ID)
+  \item species composition uses a prior from eBird + survey from Hamer et al.
+  \item Dirichlet-multinomial model in Stan
+  \item phylogenetically imputed biting preferences for other species
+  \end{itemize}
+\end{frame}
+
+
+\subsection{conclusions}
+
+\begin{frame}
+  \frametitle{seasonal effects (mostly temperature)}
+  \fullfig{spatial_results_1.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{poor match with human cases}
+  \begin{itemize}
+  \item{no systematic sampling of WNV in birds}
+  \item{human spillover effects: \\
+    activity, mosquito density, \ldots}
+  \end{itemize}
+  \medfig{spatial_results_2.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{spatial (bird community) effects}
+  \fullfig{spatial_results_4.png}
+\end{frame}
+
+\begin{frame}
+  \frametitle{species-level effects on WNV}
+   \adjfig{diluters.png}{0.9}
+\end{frame}
+
+\begin{frame}
+  \frametitle{dilution effect}
+  \fullfig{OE3C_Rich.pdf}
+\end{frame}
+
+\begin{frame}
+  \frametitle{caveats}
+  \begin{itemize}
+  \item mosquito ecology is important! missing data \\
+    \citep{rund_rescuing_2019, sedda_improved_2019, rund_miread_2019}
+  \item effects of nonlinearity + uncertainty on means and variances
+  \end{itemize}
+\end{frame}
+
+\section{Ecological synthesis}
+\subsection{\ }
+
+\begin{frame}
+  \frametitle{Being honest about uncertainty}
+  \begin{itemize}
+  \item propagate error all the way through \\
+    (Bayesian [or pseudo-Bayesian] methods)
+  \item account for full life cycle
+  \item put priors on everything \citep{elderd_uncertainty_2006,park_human_2018}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Coping with uncertainty}
+  \begin{itemize}
+  \item add covariates/auxiliary information
+  \item two-level priors (ABC)?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Data scaling}
+  %% \begin{itemize}
+  %% \item genomic/gene expression
+  %% \item remote sensing (satellite/drone)
+  %% \item telemetry
+  %% \item citizen science
+  %% \item \ldots
+  %% \end{itemize}
+  \fullfig{data_sources.jpg}
+\end{frame}
+
+\begin{frame}
+  \frametitle{data vs. computation}
+
+<<scalepic,echo=FALSE,warning=FALSE>>=
+cdat <- read.csv("data/sequencing_costs_oct2015.csv",stringsAsFactors=FALSE)
+cdat[-1] <- lapply(cdat[-1],
+                   function(x) as.numeric(gsub("[,$]","", x)))
+cdat$Date <- as.Date(paste0("01-",cdat$Date),"%d-%b-%y")
+
+expfun <- function(x,a,b,x0) {
+    r <- a*exp(-b*as.numeric(x-x0))
+    ## return(log10(r)) ## scale change!
+    return(r)
+}
+brk <- which(cdat$Date==as.Date("2012-01-01"))
+ldat <- data.frame(x=as.Date("2010-01-01"),y=800,
+                  label="atop(Moore*minute*s ~~ law*':',T[1/2] %~~% 1.5*yr)")
+## plot(Cost.per.Mb~Date,cdat,log="y")
+b_moore <- (log(2)/1.5)/365         ## moore's law: log(2)/r = 1.5
+ggplot(cdat,aes(Date,Cost.per.Mb))+geom_line()+
+    scale_y_continuous(trans="log10",labels=scales::dollar)+
+        stat_function(fun=expfun,args=list(a=cdat[1,2],b=b_moore,
+                                           x0=as.Date("2002-01-01")),
+                      lty=2)+
+        stat_function(data=cdat[brk:nrow(cdat),],
+                          fun=expfun,args=list(a=cdat[brk,2],b=b_moore,
+                                     x0=cdat$Date[brk]),
+                          lty=2)+
+                labs(x="Date",y="Sequencing cost per megabase (US$)")+
+        geom_text(data=ldat,aes(x,y,label=label),
+                           parse=TRUE)
+## how do I stop parse from glomming labels together?
+@
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+      \item industrial vs. artisanal
+      \item limitations
+        \begin{itemize}
+          \item data
+  	  \item computation
+	  \item algorithms
+ 	  \item code complexity
+	  \item theory?
+          \item judgement/creativity?
+        \end{itemize}
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \includegraphics{figs/indust_art.jpg}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+\frametitle{References}
+\tiny
+\bibliography{wnv}
+\end{frame}
+
+\end{document}
+
