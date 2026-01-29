@@ -101,6 +101,7 @@ opts_chunk$set(echo=FALSE,error=TRUE,
                fig.width=7,fig.height=5
               ,dev="pdf"  ## draft
                )
+strain_colvec <- c("#8F4847", "#52907B") ## NY99, WN02
 library(deSolve)
 library(reshape)
 library(lattice)
@@ -153,8 +154,8 @@ load("data/WNV_Pub.Rdata")
 \begin{frame}
 \frametitle{Acknowledgements}
 \begin{description}
-\item[People] Morgan Kain \includegraphics[width=1in]{figs/kain.jpg}
-\item[Support] NSF Discovery Grant
+\item[People] Morgan Kain \includegraphics[width=1in]{figs/morgankain.jpeg}
+\item[Support] NSERC (Discovery Grant)
 \end{description}
 
 \end{frame}
@@ -396,7 +397,7 @@ ggplot(R0_final_ggplot,
                       values = gray(c(0.1,0.6)),
                       name = "Temperature") +
     geom_vline(xintercept=1,lty=2) + 
-    scale_colour_manual(values=c("blue","red"),
+    scale_colour_manual(values=strain_colvec,
                     name = "strain") +
   facet_wrap(~ Host, ncol = 2) +
     scale_x_log10(breaks=c(0.1,1,10),
@@ -457,22 +458,53 @@ dds <- (dd
   %>% summarise(mean=mean(Percent_Transmitting_Mean,na.rm=TRUE))
   %>% tidyr::drop_na(mean)
 )
+
+dds <- dds |>
+  mutate(temp_cat = cut(Temperature_C, c(0, 23, 26.5, 28, Inf),
+                      labels = c("18-22", 26, 27, "30-32")))
+
+colvec <- rev(c("#52907B", "#8F4847")) ## NY99, WN02
+
+label_fun <- function(x) {
+  list(sprintf("temp=%s C", x$temp_cat))
+}
+
 ggplot(dds,aes(Days_Post_Infection,
               mean,
-              colour=factor(Temperature_C),
+              colour=Strain,
               linetype=Strain,
+              fill = Strain,
               shape=Strain)) +
+  facet_wrap(~temp_cat, labeller=label_fun) +
     geom_point()+
-    scale_colour_manual(values=viridis(7),name="temp (C)")+
     geom_smooth(method="glm",  ## "gam"?
                 ## formula=y~s(x,k=5),
                 formula=y~poly(x,2),
                 method.args=list(family=quasibinomial()),
                 alpha=0.1)+
+  scale_colour_manual(values=colvec) +
+  scale_fill_manual(values=colvec) +
     ## geom_line(aes(size=(Temperature_C==32)))+
     scale_linetype_manual(values=c(1,2))+
     labs(y="mean transmission probability",
          x="days post-infection")
+
+## ggplot(dds,aes(Days_Post_Infection,
+##               mean,
+##               colour=factor(Temperature_C),
+##               linetype=Strain,
+##               shape=Strain)) +
+##     geom_point()+
+##     scale_colour_manual(values=viridis(7),name="temp (C)")+
+##     geom_smooth(method="glm",  ## "gam"?
+##                 ## formula=y~s(x,k=5),
+##                 formula=y~poly(x,2),
+##                 method.args=list(family=quasibinomial()),
+##                 alpha=0.1)+
+##     ## geom_line(aes(size=(Temperature_C==32)))+
+##     scale_linetype_manual(values=c(1,2))+
+##     labs(y="mean transmission probability",
+##         x="days post-infection")
 @
 \end{frame}
 
@@ -728,12 +760,23 @@ ggplot(cdat,aes(Date,Cost.per.Mb))+geom_line()+
 	  \item theory?
           \item judgement/creativity?
         \end{itemize}
+      \item large language models (????)
       \end{itemize}
     \end{column}
     \begin{column}{0.5\textwidth}
       \includegraphics{figs/indust_art.jpg}
     \end{column}
   \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Source}  
+  \url{https://github.com/bbolker/ecosynth_talk}
+
+<<qrcode, echo = FALSE>>=
+library("qrcode")
+plot(qr_code("https://www.math.mcmaster.ca/bolker/misc/bolker_ecosynth.pdf"))
+@
 \end{frame}
 
 \begin{frame}
